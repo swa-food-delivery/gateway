@@ -1,0 +1,73 @@
+server:
+  port: 8180
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8182/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  healthcheck:
+    enabled: true
+
+spring:
+  cloud:
+    discovery:
+      locator:
+        lower-case-service-id: true
+        enabled: true
+    gateway:
+      default-filters:
+        - TokenRelay
+        - RemoveRequestHeader=Cookie
+      routes:
+        - id: orders-service
+          uri: lb://orders-service
+          predicates:
+            - Path=/orders/**
+        - id: restaurants-service
+          uri: lb://RESTAURANTS-SERVICE
+          predicates:
+            - Path=/restaurants/**
+        - id: drivers-service
+          uri: lb://DRIVERS-SERVICE
+          predicates:
+            - Path=/drivers/**
+  application:
+    name: gateway
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8181/auth/realms/microfood/protocol/openid-connect/certs
+      client:
+        provider:
+          keycloak:
+            token-uri: http://localhost:8181/auth/realms/microfood/protocol/openid-connect/token
+            authorization-uri: http://localhost:8181/auth/realms/microfood/protocol/openid-connect/auth
+            userinfo-uri: http://localhost:8181/auth/realms/microfood/protocol/openid-connect/userinfo
+            jwk-set-uri: http://localhost:8181/auth/realms/microfood/protocol/openid-connect/certs
+            user_name_attribute: preferred_username
+        registration:
+          gateway:
+            provider: keycloak
+            client-id: gateway
+            client-secret: 44be2d5f-080a-45f2-b286-46ee7ad1d60f
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: @project.version@
+
+
+logging.level:
+  org.springframework.cloud.gateway: DEBUG
+  org.springframework.security: DEBUG
+  org.springframework.web.reactive.function.client: TRACE

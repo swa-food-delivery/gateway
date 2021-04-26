@@ -3,9 +3,8 @@ server:
 
 eureka:
   instance:
-    prefer-ip-address: true
     instance-id: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
-    hostname: localhost
+    hostname: ${GATEWAY_HOST:localhost}
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8182/eureka/}

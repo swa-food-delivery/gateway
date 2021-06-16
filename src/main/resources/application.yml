@@ -29,10 +29,10 @@ spring:
           uri: lb://restaurants-service
           predicates:
             - Path=/restaurants/**
-        - id: drivers-service
-          uri: lb://DRIVERS-SERVICE
+        - id: restaurant-tickets-service
+          uri: lb://restaurant-tickets-service
           predicates:
-            - Path=/drivers/**
+            - Path=/tickets/**
   application:
     name: gateway
 
